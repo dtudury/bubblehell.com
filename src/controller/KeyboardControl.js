@@ -6,9 +6,9 @@ let _set = new Set();
 function update_direction(e, state) {
     let keyCode = (e || window.event).keyCode;
     if (e.type === "keyup") {
-        if(!_set.removeMember(keyCode)) return;
+        if(!_set.remove(keyCode)) return;
     } else if (e.type === "keydown") {
-        if(!_set.addMember(keyCode)) return;
+        if(!_set.add(keyCode)) return;
     }
     emitter.emit(CHORD, _set.members, e.timeStamp);
 }

@@ -2,19 +2,27 @@
 export default class DumbSet {
     constructor(...startingMembers) {
         this.members = [];
-        startingMembers.forEach(member => this.addMember(member));
+        startingMembers.forEach(member => this.add(member));
     }
 
-    addMember(member) {
+    add(member) {
         if (this.members.indexOf(member) >= 0) return false;
         this.members.push(member);
         return true;
     }
 
-    removeMember(member) {
+    remove(member) {
         var i = this.members.indexOf(member);
         if (i < 0) return false;
         this.members.splice(i, 1);
         return true;
+    }
+
+    get length() {
+        return this.members.length;
+    }
+
+    forEach(f) {
+        return this.members.forEach(f);
     }
 }

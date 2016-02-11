@@ -1,5 +1,5 @@
 
-import {grid, things} from "../model/World.js";
+import {quadtree} from "../model/World.js";
 import Quad from "../Quad.js";
 
 const _SCALE = Symbol();
@@ -10,10 +10,17 @@ export default class Board {
         this.vwidth = vwidth; //let's pretend this is the width when talking to Board
         this.vheight = vheight; //let's pretend this is the height when talking to Board
         this.inner = new Quad(0, 0, vwidth, vheight);
-        this[_SCALE] = 1;
+        this[_SCALE] = 1
+        let redraw_loop = () => {
+            this.redraw();
+            window.requestAnimationFrame(redraw_loop);
+        }
+        window.requestAnimationFrame(redraw_loop);
     }
 
     resize (width, height) {
+        this.windowWidth = width;
+        this.windowHeight = height;
         //size to fit
         let inner_ratio = this.vwidth / this.vheight;
         let outer_ratio = width / height;
@@ -35,6 +42,7 @@ export default class Board {
     }
 
     redraw () {
+        this.context.clearRect(0,0,this.windowWidth,this.windowHeight);
         this.context.strokeWidth = 1;
         let draw_quadtree = (quadtree) => {
             if (quadtree.nodes) {
@@ -56,9 +64,9 @@ export default class Board {
         }
 
         this.context.strokeStyle = "rgb(200,200,255)";
-        draw_quadtree(grid);
+        draw_quadtree(quadtree);
         this.context.strokeStyle = "green";
-        things.forEach(thing => {
+        quadtree.things.members.forEach(thing => {
             this.context.beginPath();
             let p = this.map(thing.x, thing.y);
             let r = this.scale(thing.r);
@@ -77,8 +85,16 @@ export default class Board {
         return {x: this.inner.x + this.scale(x), y: this.inner.y + this.scale(y)};
     }
 
+    reverse_map (x, y) {
+        return {x: this.reverse_scale(x - this.inner.x), y: this.reverse_scale(y - this.inner.y)};
+    }
+
     scale (v) {
         return this[_SCALE] * v;
+    }
+
+    reverse_scale (v) {
+        return v / this[_SCALE];
     }
 }
 

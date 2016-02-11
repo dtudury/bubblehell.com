@@ -1,6 +1,6 @@
 
 import RoundThing from "../RoundThing.js";
-import Grid from "../QuadTree.js";
+import QuadTree from "../QuadTree.js";
 
 import * as DoubleJoystick from "../controller/DoubleJoystick.js"
 
@@ -14,8 +14,7 @@ DoubleJoystick.emitter.on(DoubleJoystick.MOVE, (k, m, ts) => {
 
 let w = 400;
 let h = 300;
-export let things = [];
-export let grid = new Grid(0, 0, Math.max(w, h));
+export let quadtree = new QuadTree(0, 0, Math.max(w, h));
 
 for (let i = 0; i < 40; i++) {
     let r = Math.random() * 4 + 1;
@@ -27,13 +26,10 @@ for (let i = 0; i < 40; i++) {
     let dy = Math.sin(angle) * speed;
     let thing = new RoundThing(r, x, y, dx, dy);
     let no_collision = true;
-    things.forEach(thing2 => {
+    quadtree.things.members.forEach(thing2 => {
         if (RoundThing.overlaps_circle_and_circle(thing, thing2)) {
             no_collision = false;
         }
     });
-    if (no_collision) {
-        things.push(thing);
-        grid.insert(thing);
-    }
+    if (no_collision) quadtree.add(thing);
 }
