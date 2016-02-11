@@ -3,8 +3,8 @@ import RoundThing from "../RoundThing.js";
 
 export default function (element, board) {
     element.addEventListener("click", e => {
-        var p = board.reverse_map(e.x, e.y)
-        var thing = quadtree.get_thing_at(p.x, p.y);
+        let p = board.reverse_map(e.x, e.y)
+        let thing = quadtree.get_thing_at(p.x, p.y);
         if (thing) {
             quadtree.remove(thing);
         } else {
@@ -18,5 +18,9 @@ export default function (element, board) {
             let thing = new RoundThing(r, p.x, p.y, dx, dy);
             quadtree.add(thing);
         }
+    });
+    window.addEventListener("mousemove", e => {
+        let p = board.reverse_map(e.x, e.y)
+        quadtree.thing = quadtree.get_thing_at(p.x, p.y);
     });
 }

@@ -3,6 +3,7 @@ import RoundThing from "../RoundThing.js";
 import QuadTree from "../QuadTree.js";
 
 import * as DoubleJoystick from "../controller/DoubleJoystick.js"
+import * as Overlaps from "../Overlaps.js";
 
 DoubleJoystick.emitter.on(DoubleJoystick.MOVE, (k, m, ts) => {
     console.log(DoubleJoystick.calculate_arrow(k),
@@ -27,7 +28,7 @@ for (let i = 0; i < 40; i++) {
     let thing = new RoundThing(r, x, y, dx, dy);
     let no_collision = true;
     quadtree.things.members.forEach(thing2 => {
-        if (RoundThing.overlaps_circle_and_circle(thing, thing2)) {
+        if (Overlaps.circle_and_circle(thing, thing2)) {
             no_collision = false;
         }
     });

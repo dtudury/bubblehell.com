@@ -43,7 +43,7 @@ export default class Board {
 
     redraw () {
         this.context.clearRect(0,0,this.windowWidth,this.windowHeight);
-        this.context.strokeWidth = 1;
+        this.context.lineWidth = 1;
         let draw_quadtree = (quadtree) => {
             if (quadtree.nodes) {
                 let middle = this.map(quadtree.x + quadtree.width / 2, quadtree.y + quadtree.height / 2);
@@ -55,11 +55,7 @@ export default class Board {
                 this.context.moveTo(tl.x, middle.y);
                 this.context.lineTo(br.x, middle.y);
                 this.context.stroke();
-                for (let x = 0; x < 2; x++) {
-                    for (let y = 0; y < 2; y++) {
-                        draw_quadtree(quadtree.nodes[x][y]);
-                    }
-                }
+                quadtree.nodes.forEach(node => draw_quadtree(node));
             }
         }
 
@@ -74,8 +70,20 @@ export default class Board {
             this.context.stroke();
         });
 
+        if (quadtree.thing) {
+            this.context.strokeStyle = "red";
+            this.context.lineWidth = 5;
+            quadtree.thing.quads.forEach(quad => {
+                let tl = this.map(quad.x, quad.y);
+                let size = this.scale(quad.size);
+                this.context.strokeRect(
+                    tl.x, tl.y, size, size 
+                );
+            });
+        }
+
         this.context.strokeStyle = "blue";
-        this.context.strokeWidth = 3;
+        this.context.lineWidth = 1;
         let origin = this.map(0, 0);
         this.context.strokeStyle = "black";
         this.context.strokeRect(origin.x, origin.y, this.scale(this.vwidth), this.scale(this.vheight));

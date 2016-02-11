@@ -40,26 +40,4 @@ export default class Quad {
     get br () {
         return new Point(this.right, this.bottom);
     }
-
-    overlaps(quad) {
-        return Quad.overlaps(this, quad);
-    }
-
-    overlaps_point(p) {
-        return Quad.overlaps_point(this, p);
-    }
-
-    static overlaps(a, b) {
-        return a.left < b.right && 
-            a.right > b.left &&
-            a.top < b.bottom &&
-            a.bottom > b.top;
-    }
-
-    static overlaps_point(q, p) {
-        return p.x > q.left &&
-            p.x < q.right &&
-            p.y > q.top &&
-            p.y < q.bottom;
-    }
 }
