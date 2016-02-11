@@ -361,6 +361,48 @@ exports.default = DumbSet;
 },{}],3:[function(require,module,exports){
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.quad_and_quad = quad_and_quad;
+exports.quad_and_point = quad_and_point;
+exports.quad_and_circle = quad_and_circle;
+exports.circle_and_circle = circle_and_circle;
+exports.circle_and_point = circle_and_point;
+
+var _Point = require("./Point.js");
+
+var _Point2 = _interopRequireDefault(_Point);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function quad_and_quad(a, b) {
+    return a.left <= b.right && a.right >= b.left && a.top <= b.bottom && a.bottom >= b.top;
+}
+
+function quad_and_point(q, p) {
+    return p.x >= q.left && p.x <= q.right && p.y >= q.top && p.y <= q.bottom;
+}
+
+function quad_and_circle(q, c) {
+    if (quad_and_quad(q, c)) return true;
+    if (c.x > q.left && c.x < q.right) return c.y + c.r >= q.top && c.y - c.r <= q.bottom;
+    if (c.y > q.top && c.y <= q.bottom) return c.x + c.r >= q.left && c.x - c.r <= q.right;
+    var r2 = Math.pow(c.r, 2);
+    return _Point2.default.distance_squared(c, q.tl) <= r2 || _Point2.default.distance_squared(c, q.tr) <= r2 || _Point2.default.distance_squared(c, q.bl) <= r2 || _Point2.default.distance_squared(c, q.br) <= r2;
+}
+
+function circle_and_circle(a, b) {
+    return _Point2.default.distance_squared(a, b) <= Math.pow(a.r + b.r, 2);
+}
+
+function circle_and_point(c, p) {
+    return _Point2.default.distance_squared(c, p) <= Math.pow(c.r, 2);
+}
+
+},{"./Point.js":4}],4:[function(require,module,exports){
+"use strict";
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 Object.defineProperty(exports, "__esModule", {
@@ -394,7 +436,7 @@ var Point = function () {
 
 exports.default = Point;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -422,16 +464,6 @@ var Quad = function () {
     }
 
     _createClass(Quad, [{
-        key: "overlaps",
-        value: function overlaps(quad) {
-            return Quad.overlaps(this, quad);
-        }
-    }, {
-        key: "overlaps_point",
-        value: function overlaps_point(p) {
-            return Quad.overlaps_point(this, p);
-        }
-    }, {
         key: "left",
         get: function get() {
             return this.x;
@@ -471,16 +503,6 @@ var Quad = function () {
         get: function get() {
             return new _Point2.default(this.right, this.bottom);
         }
-    }], [{
-        key: "overlaps",
-        value: function overlaps(a, b) {
-            return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-        }
-    }, {
-        key: "overlaps_point",
-        value: function overlaps_point(q, p) {
-            return p.x > q.left && p.x < q.right && p.y > q.top && p.y < q.bottom;
-        }
     }]);
 
     return Quad;
@@ -488,7 +510,7 @@ var Quad = function () {
 
 exports.default = Quad;
 
-},{"./Point.js":3}],5:[function(require,module,exports){
+},{"./Point.js":4}],6:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -504,6 +526,12 @@ var _Quad3 = _interopRequireDefault(_Quad2);
 var _DumbSet = require("./DumbSet.js");
 
 var _DumbSet2 = _interopRequireDefault(_DumbSet);
+
+var _Overlaps = require("./Overlaps.js");
+
+var Overlaps = _interopRequireWildcard(_Overlaps);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -539,7 +567,7 @@ var QuadTree = function (_Quad) {
     _createClass(QuadTree, [{
         key: "add",
         value: function add(thing) {
-            if (!thing.overlaps_quad(this)) return;
+            if (!Overlaps.quad_and_circle(this, thing)) return;
             if (!this.things.add(thing)) return;
             if (this.bucket) {
                 if (this.bucket.length < this.capacity || !this.max_levels) {
@@ -549,11 +577,9 @@ var QuadTree = function (_Quad) {
                 }
                 this.split();
             }
-            for (var x = 0; x < 2; x++) {
-                for (var y = 0; y < 2; y++) {
-                    this.nodes[x][y].add(thing);
-                }
-            }
+            this.nodes.forEach(function (node) {
+                return node.add(thing);
+            });
         }
     }, {
         key: "remove",
@@ -566,11 +592,9 @@ var QuadTree = function (_Quad) {
                 thing.quads.remove(this);
             } else {
                 var remove_from_nodes = function remove_from_nodes(thing) {
-                    for (var x = 0; x < 2; x++) {
-                        for (var y = 0; y < 2; y++) {
-                            _this2.nodes[x][y].remove(thing);
-                        }
-                    }
+                    _this2.nodes.forEach(function (node) {
+                        return node.remove(thing);
+                    });
                 };
                 remove_from_nodes(thing);
                 if (this.things.length <= this.capacity) {
@@ -579,6 +603,7 @@ var QuadTree = function (_Quad) {
                     this.bucket = new _DumbSet2.default();
                     this.things.forEach(function (thing) {
                         _this2.bucket.add(thing);
+                        thing.quads.add(_this2);
                     });
                 }
             }
@@ -588,18 +613,16 @@ var QuadTree = function (_Quad) {
         value: function get_thing_at(x, y) {
             var p = { x: x, y: y };
             var found_thing = null;
-            if (!this.overlaps_point(p)) return found_thing;
+            if (!Overlaps.quad_and_point(this, p)) return null;
             if (this.bucket) {
                 this.bucket.forEach(function (thing) {
-                    if (thing.overlaps_point(p)) found_thing = thing;
+                    if (Overlaps.circle_and_point(thing, p)) found_thing = thing;
                 });
                 return found_thing;
             }
-            for (var i = 0; i < 2; i++) {
-                for (var j = 0; j < 2; j++) {
-                    found_thing = found_thing || this.nodes[i][j].get_thing_at(x, y);
-                }
-            }
+            this.nodes.forEach(function (node) {
+                return found_thing = found_thing || node.get_thing_at(x, y);
+            });
             return found_thing;
         }
     }, {
@@ -607,22 +630,24 @@ var QuadTree = function (_Quad) {
         value: function split() {
             var _this3 = this;
 
+            this.bucket.forEach(function (thing) {
+                return thing.quads.remove(_this3);
+            });
             var half_size = this.size / 2;
             this.nodes = [];
-            for (var x = 0; x < 2; x++) {
-                this.nodes[x] = [];
 
-                var _loop = function _loop(y) {
-                    var qt = new QuadTree(_this3.x + half_size * x, _this3.y + half_size * y, half_size, _this3.capacity, _this3.max_levels - 1);
-                    _this3.nodes[x][y] = qt;
-                    _this3.bucket.forEach(function (t) {
-                        return qt.add(t);
-                    });
-                };
+            var _loop = function _loop(i) {
+                var x = i % 2;
+                var y = i / 2 >>> 0;
+                var qt = new QuadTree(_this3.x + half_size * x, _this3.y + half_size * y, half_size, _this3.capacity, _this3.max_levels - 1);
+                _this3.nodes[i] = qt;
+                _this3.bucket.forEach(function (t) {
+                    return qt.add(t);
+                });
+            };
 
-                for (var y = 0; y < 2; y++) {
-                    _loop(y);
-                }
+            for (var i = 0; i < 4; i++) {
+                _loop(i);
             }
             delete this.bucket;
         }
@@ -633,7 +658,7 @@ var QuadTree = function (_Quad) {
 
 exports.default = QuadTree;
 
-},{"./DumbSet.js":2,"./Quad.js":4}],6:[function(require,module,exports){
+},{"./DumbSet.js":2,"./Overlaps.js":3,"./Quad.js":5}],7:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -641,14 +666,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-var _Quad = require("./Quad.js");
-
-var _Quad2 = _interopRequireDefault(_Quad);
-
-var _Point = require("./Point.js");
-
-var _Point2 = _interopRequireDefault(_Point);
 
 var _Thing2 = require("./Thing.js");
 
@@ -686,16 +703,6 @@ var RoundThing = function (_Thing) {
     }
 
     _createClass(RoundThing, [{
-        key: "overlaps_quad",
-        value: function overlaps_quad(quad) {
-            return _Quad2.default.overlaps(this, quad) && RoundThing.overlaps_circle_and_quad(this, quad);
-        }
-    }, {
-        key: "overlaps_point",
-        value: function overlaps_point(p) {
-            return RoundThing.overlaps_circle_and_point(this, p);
-        }
-    }, {
         key: "left",
         get: function get() {
             return this.x - this.r;
@@ -715,24 +722,6 @@ var RoundThing = function (_Thing) {
         get: function get() {
             return this.y + this.r;
         }
-    }], [{
-        key: "overlaps_circle_and_quad",
-        value: function overlaps_circle_and_quad(c, q) {
-            if (c.x > q.left && c.x < q.right) return c.y + c.r > q.top && c.y - c.r < q.bottom;
-            if (c.y > q.top && c.y < q.bottom) return c.x + c.r > q.left && c.x - c.r < q.right;
-            var r2 = Math.pow(c.r);
-            return _Point2.default.distance_squared(c, q.tl) < r2 || _Point2.default.distance_squared(c, q.tr) < r2 || _Point2.default.distance_squared(c, q.bl) < r2 || _Point2.default.distance_squared(c, q.br) < r2;
-        }
-    }, {
-        key: "overlaps_circle_and_circle",
-        value: function overlaps_circle_and_circle(c1, c2) {
-            return _Point2.default.distance_squared(c1, c2) < Math.pow(c1.r + c2.r, 2);
-        }
-    }, {
-        key: "overlaps_circle_and_point",
-        value: function overlaps_circle_and_point(c, p) {
-            return _Point2.default.distance_squared(c, p) < Math.pow(c.r, 2);
-        }
     }]);
 
     return RoundThing;
@@ -740,7 +729,7 @@ var RoundThing = function (_Thing) {
 
 exports.default = RoundThing;
 
-},{"./Point.js":3,"./Quad.js":4,"./Thing.js":7}],7:[function(require,module,exports){
+},{"./Thing.js":8}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -759,11 +748,13 @@ var Thing = function Thing() {
     _classCallCheck(this, Thing);
 
     this.quads = new _DumbSet2.default();
+    this.quads.original_add = this.quads.add;
+    this.quads.original_remove = this.quads.remove;
 };
 
 exports.default = Thing;
 
-},{"./DumbSet":2}],8:[function(require,module,exports){
+},{"./DumbSet":2}],9:[function(require,module,exports){
 "use strict";
 
 var _ref, _, _2, _atrig2;
@@ -879,7 +870,7 @@ MouseControl.emitter.on(MouseControl.MOVE, function (dx, dy, ts) {
 var MOVE = exports.MOVE = "move";
 var emitter = exports.emitter = new _events2.default();
 
-},{"./KeyboardControl.js":9,"./MouseControl.js":10,"./MouseLock.js":11,"events":1}],9:[function(require,module,exports){
+},{"./KeyboardControl.js":10,"./MouseControl.js":11,"./MouseLock.js":12,"events":1}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -915,7 +906,7 @@ window.addEventListener("keyup", update_direction);
 var CHORD = exports.CHORD = "chord";
 var emitter = exports.emitter = new _events2.default();
 
-},{"../DumbSet.js":2,"events":1}],10:[function(require,module,exports){
+},{"../DumbSet.js":2,"events":1}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -938,7 +929,7 @@ document.addEventListener("mousemove", function (e) {
 var MOVE = exports.MOVE = "look";
 var emitter = exports.emitter = new _events2.default();
 
-},{"events":1}],11:[function(require,module,exports){
+},{"events":1}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -981,7 +972,7 @@ var LOCKED = exports.LOCKED = "locked";
 var UNLOCKED = exports.UNLOCKED = "unlocked";
 var emitter = exports.emitter = new _events2.default();
 
-},{"events":1}],12:[function(require,module,exports){
+},{"events":1}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1006,6 +997,10 @@ exports.default = function (element, board) {
             _World.quadtree.add(_thing);
         }
     });
+    window.addEventListener("mousemove", function (e) {
+        var p = board.reverse_map(e.x, e.y);
+        _World.quadtree.thing = _World.quadtree.get_thing_at(p.x, p.y);
+    });
 };
 
 var _World = require("../model/World.js");
@@ -1016,7 +1011,7 @@ var _RoundThing2 = _interopRequireDefault(_RoundThing);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"../RoundThing.js":6,"../model/World.js":14}],13:[function(require,module,exports){
+},{"../RoundThing.js":7,"../model/World.js":15}],14:[function(require,module,exports){
 "use strict";
 
 var _Board = require("./view/Board.js");
@@ -1049,7 +1044,7 @@ window.onload = function () {
     (0, _QuadTreeDebug2.default)(_canvas, _board);
 };
 
-},{"./controller/MouseLock.js":11,"./controller/QuadTreeDebug.js":12,"./view/Board.js":15}],14:[function(require,module,exports){
+},{"./controller/MouseLock.js":12,"./controller/QuadTreeDebug.js":13,"./view/Board.js":16}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1068,6 +1063,10 @@ var _QuadTree2 = _interopRequireDefault(_QuadTree);
 var _DoubleJoystick = require("../controller/DoubleJoystick.js");
 
 var DoubleJoystick = _interopRequireWildcard(_DoubleJoystick);
+
+var _Overlaps = require("../Overlaps.js");
+
+var Overlaps = _interopRequireWildcard(_Overlaps);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -1092,7 +1091,7 @@ var _loop = function _loop(i) {
     var thing = new _RoundThing2.default(r, x, y, dx, dy);
     var no_collision = true;
     quadtree.things.members.forEach(function (thing2) {
-        if (_RoundThing2.default.overlaps_circle_and_circle(thing, thing2)) {
+        if (Overlaps.circle_and_circle(thing, thing2)) {
             no_collision = false;
         }
     });
@@ -1103,7 +1102,7 @@ for (var i = 0; i < 40; i++) {
     _loop(i);
 }
 
-},{"../QuadTree.js":5,"../RoundThing.js":6,"../controller/DoubleJoystick.js":8}],15:[function(require,module,exports){
+},{"../Overlaps.js":3,"../QuadTree.js":6,"../RoundThing.js":7,"../controller/DoubleJoystick.js":9}],16:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1175,7 +1174,7 @@ var Board = function () {
             var _this2 = this;
 
             this.context.clearRect(0, 0, this.windowWidth, this.windowHeight);
-            this.context.strokeWidth = 1;
+            this.context.lineWidth = 1;
             var draw_quadtree = function draw_quadtree(quadtree) {
                 if (quadtree.nodes) {
                     var middle = _this2.map(quadtree.x + quadtree.width / 2, quadtree.y + quadtree.height / 2);
@@ -1187,11 +1186,9 @@ var Board = function () {
                     _this2.context.moveTo(tl.x, middle.y);
                     _this2.context.lineTo(br.x, middle.y);
                     _this2.context.stroke();
-                    for (var x = 0; x < 2; x++) {
-                        for (var y = 0; y < 2; y++) {
-                            draw_quadtree(quadtree.nodes[x][y]);
-                        }
-                    }
+                    quadtree.nodes.forEach(function (node) {
+                        return draw_quadtree(node);
+                    });
                 }
             };
 
@@ -1206,8 +1203,18 @@ var Board = function () {
                 _this2.context.stroke();
             });
 
+            if (_World.quadtree.thing) {
+                this.context.strokeStyle = "red";
+                this.context.lineWidth = 5;
+                _World.quadtree.thing.quads.forEach(function (quad) {
+                    var tl = _this2.map(quad.x, quad.y);
+                    var size = _this2.scale(quad.size);
+                    _this2.context.strokeRect(tl.x, tl.y, size, size);
+                });
+            }
+
             this.context.strokeStyle = "blue";
-            this.context.strokeWidth = 3;
+            this.context.lineWidth = 1;
             var origin = this.map(0, 0);
             this.context.strokeStyle = "black";
             this.context.strokeRect(origin.x, origin.y, this.scale(this.vwidth), this.scale(this.vheight));
@@ -1239,7 +1246,7 @@ var Board = function () {
 
 exports.default = Board;
 
-},{"../Quad.js":4,"../model/World.js":14}]},{},[13])
+},{"../Quad.js":5,"../model/World.js":15}]},{},[14])
 
 
 //# sourceMappingURL=bundle.js.map
