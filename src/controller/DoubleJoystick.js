@@ -4,6 +4,9 @@ import * as KeyboardControl from "./KeyboardControl.js";
 import * as MouseControl from "./MouseControl.js";
 import * as MouseLock from "./MouseLock.js";
 
+export const MOVE = "move";
+export const emitter = new EventEmitter();
+
 /*********** I guess we're using turn/8 as our angle unit
  * 5  6  7 *
  *  \ | /  *
@@ -72,6 +75,7 @@ KeyboardControl.emitter.on(KeyboardControl.CHORD, (chord, ts) => {
         x *= Math.SQRT1_2;
         y *= Math.SQRT1_2;
     }
+    if (x === kangle.x && y === kangle.y) return;
     kangle = {x:x, y:y};
     emitter.emit(MOVE, kangle, mangle, ts);
 });
@@ -91,5 +95,3 @@ MouseControl.emitter.on(MouseControl.MOVE, (dx, dy, ts) => {
     emitter.emit(MOVE, kangle, mangle, ts);
 });
 
-export const MOVE = "move";
-export const emitter = new EventEmitter();

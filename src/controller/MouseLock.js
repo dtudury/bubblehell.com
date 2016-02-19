@@ -1,7 +1,7 @@
 
 import EventEmitter from "events";
 
-export let locked = false;
+export let unlocked = false;
 
 function get_pointerLockElement() {
     return document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
@@ -9,9 +9,9 @@ function get_pointerLockElement() {
 
 function update_pointerlock(e, element) {
     let pointerLockElement = get_pointerLockElement();
-    if (locked === !!pointerLockElement) return;
-    locked = !!pointerLockElement;
-    emitter.emit(pointerLockElement ? LOCKED : UNLOCKED, e.timeStamp);
+    if (unlocked !== pointerLockElement) return;
+    unlocked = !pointerLockElement;
+    emitter.emit(unlocked ? UNLOCKED : LOCKED, e.timeStamp);
 }
 
 

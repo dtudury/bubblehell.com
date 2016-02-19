@@ -12,7 +12,7 @@ export default class DumbSet {
     }
 
     remove(member) {
-        var i = this.members.indexOf(member);
+        let i = this.members.indexOf(member);
         if (i < 0) return false;
         this.members.splice(i, 1);
         return true;
@@ -20,9 +20,5 @@ export default class DumbSet {
 
     get length() {
         return this.members.length;
-    }
-
-    forEach(f) {
-        return this.members.forEach(f);
     }
 }

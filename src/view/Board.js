@@ -1,5 +1,5 @@
 
-import {quadtree} from "../model/World.js";
+import {movingThings} from "../model/World.js";
 import Quad from "../Quad.js";
 
 const _SCALE = Symbol();
@@ -10,11 +10,11 @@ export default class Board {
         this.vwidth = vwidth; //let's pretend this is the width when talking to Board
         this.vheight = vheight; //let's pretend this is the height when talking to Board
         this.inner = new Quad(0, 0, vwidth, vheight);
-        this[_SCALE] = 1
+        this[_SCALE] = 1;
         let redraw_loop = () => {
             this.redraw();
             window.requestAnimationFrame(redraw_loop);
-        }
+        };
         window.requestAnimationFrame(redraw_loop);
     }
 
@@ -42,11 +42,12 @@ export default class Board {
     }
 
     redraw () {
+        let things = movingThings.get_things_at_t(Date.now());
         this.context.clearRect(0,0,this.windowWidth,this.windowHeight);
         this.context.lineWidth = 1;
         let draw_quadtree = (quadtree) => {
             if (quadtree.nodes) {
-                let middle = this.map(quadtree.x + quadtree.width / 2, quadtree.y + quadtree.height / 2);
+                let middle = this.map(quadtree.x + quadtree.size / 2, quadtree.y + quadtree.size / 2);
                 let tl = this.map(quadtree.x, quadtree.y);
                 let br = this.map(quadtree.x + quadtree.size, quadtree.y + quadtree.size);
                 this.context.beginPath();
@@ -57,23 +58,15 @@ export default class Board {
                 this.context.stroke();
                 quadtree.nodes.forEach(node => draw_quadtree(node));
             }
-        }
+        };
 
-        this.context.strokeStyle = "rgb(200,200,255)";
-        draw_quadtree(quadtree);
-        this.context.strokeStyle = "green";
-        quadtree.things.members.forEach(thing => {
-            this.context.beginPath();
-            let p = this.map(thing.x, thing.y);
-            let r = this.scale(thing.r);
-            this.context.arc(p.x, p.y, r, 0, Math.PI*2, true);
-            this.context.stroke();
-        });
+        this.context.strokeStyle = "rgb(240,240,255)";
+        draw_quadtree(movingThings);
 
-        if (quadtree.thing) {
-            this.context.strokeStyle = "red";
-            this.context.lineWidth = 5;
-            quadtree.thing.quads.forEach(quad => {
+        if (movingThings.thing) {
+            this.context.strokeStyle = "rgb(220,220,255)";
+            this.context.lineWidth = 2;
+            movingThings.thing.quads_set.members.forEach(quad => {
                 let tl = this.map(quad.x, quad.y);
                 let size = this.scale(quad.size);
                 this.context.strokeRect(
@@ -81,6 +74,17 @@ export default class Board {
                 );
             });
         }
+
+        this.context.lineWidth = 1;
+        things.forEach(thing => {
+            this.context.strokeStyle = thing.color || "green";
+            thing.untouch();
+            this.context.beginPath();
+            let p = this.map(thing.x, thing.y);
+            let r = this.scale(thing.r);
+            this.context.arc(p.x, p.y, r, 0, Math.PI*2, true);
+            this.context.stroke();
+        });
 
         this.context.strokeStyle = "blue";
         this.context.lineWidth = 1;
