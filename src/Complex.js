@@ -1,4 +1,4 @@
-let sign = Math.sign || function (x) {
+let _sign = Math.sign || function (x) {
     return x && x > 0 ? 1 : -1;
 };
 
@@ -117,7 +117,7 @@ function _mul (a, b) {
 }
 
 function _neg (v) {
-    return new Complex(-a.r, -a.i);
+    return new Complex(-v.r, -v.i);
 }
 
 function _sqrt (v) {
@@ -128,12 +128,12 @@ function _sqrt (v) {
     let a = _abs(v).r / 2;
     let b = v.r / 2;
     let c = Math.sqrt(a + b);
-    let d = sign(v.i) * Math.sqrt(a - b);
+    let d = _sign(v.i) * Math.sqrt(a - b);
     return new Complex(c, d);
 }
 
 function _sub (a, b) {
-    return {r:a.r - b.r, i:a.i - b.i};
+    return new Complex(a.r - b.r, a.i - b.i);
 }
 
 export default Complex;

@@ -3,9 +3,6 @@ import Complex from "../src/Complex.js";
 let C = Complex.convert;
 let assert = require("assert");
 
-function precision(v, p) {
-}
-
 describe("Complex", () => {
     describe("sqrt", () => {
         it("should handle {r=-10,i=-10}", () => {

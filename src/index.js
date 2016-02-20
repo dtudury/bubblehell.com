@@ -2,7 +2,6 @@
 import Board from "./view/Board.js";
 import {set as setMouseLock} from "./controller/MouseLock.js";
 import QuadTreeDebug from "./controller/QuadTreeDebug.js";
-import Complex from "./Complex.js";
 
 window.onload = () => {
     let _canvas = document.createElement("canvas");

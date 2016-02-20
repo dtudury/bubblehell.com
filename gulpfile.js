@@ -4,6 +4,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var watch = require('gulp-watch');
 var jshint = require('gulp-jshint');
 var connect = require('gulp-connect');
+var uglify = require('gulp-uglify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
@@ -24,6 +25,7 @@ function bundle (main, src, dest, output, watch) {
             .pipe(source(output))
             .pipe(buffer())
             .pipe(sourcemaps.init({ loadMaps: true }))
+            .pipe(uglify())
             .pipe(sourcemaps.write("./"))
             .pipe(gulp.dest(dest));
     }
