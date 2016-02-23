@@ -66,7 +66,7 @@ export default class Board {
         if (movingThings.thing) {
             this.context.strokeStyle = "rgb(220,220,255)";
             this.context.lineWidth = 2;
-            movingThings.thing.quads_set.members.forEach(quad => {
+            movingThings.thing.quads_set.forEach(quad => {
                 let tl = this.map(quad.x, quad.y);
                 let size = this.scale(quad.size);
                 this.context.strokeRect(

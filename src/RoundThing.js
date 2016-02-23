@@ -2,7 +2,7 @@
 import Thing from "./Thing.js";
 
 export default class RoundThing extends Thing {
-    constructor (t, r, x, y, dx, dy, ddx, ddy = 0.00001, color = "black") {
+    constructor (t, r, x, y, dx, dy, ddx = 0, ddy = 0.00001, color = "black") {
         t = t === undefined ? Date.now() : t;
         super(t, x, y, dx, dy, ddx, ddy);
         this.r = r;
@@ -42,6 +42,10 @@ export default class RoundThing extends Thing {
         let speed = (Math.random() * 5 + 2) * 0.01;
         let dx = Math.cos(angle) * speed;
         let dy = Math.sin(angle) * speed;
-        return new RoundThing(t, r, x, y, dx, dy);
+        let angle2 = Math.random() * 2 * Math.PI;
+        let acceleration = 0.00001;
+        let ddx = Math.cos(angle2) * acceleration;
+        let ddy = Math.sin(angle2) * acceleration;
+        return new RoundThing(t, r, x, y, dx, dy, ddx, ddy);
     }
 }

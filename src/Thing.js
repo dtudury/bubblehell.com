@@ -1,6 +1,4 @@
 
-import Set from "./DumbSet";
-
 export default class Thing {
     constructor(t, x = 0, y = 0, dx = 0, dy = 0, ddx = 0, ddy = 0) {
         this.t = t === undefined ? Date.now() : t;
@@ -15,11 +13,11 @@ export default class Thing {
 
     clone_at_t(t) {
         let dt = t - this.t;
-        let dt2 = Math.pow(dt, 2);
+        let dt2 = dt * dt;
         return new Thing(
                 t,
-                this.x + dt * this.dx + dt2 * this.ddx,
-                this.y + dt * this.dy + dt2 * this.ddy,
+                this.x + dt * this.dx + dt2 * this.ddx / 2,
+                this.y + dt * this.dy + dt2 * this.ddy / 2,
                 this.dx + dt * this.ddx,
                 this.dy + dt * this.ddy,
                 this.ddx,

@@ -1,6 +1,5 @@
 
 import Quad from "./Quad.js";
-import Set from "./DumbSet.js";
 import * as Overlaps from "./Overlaps.js";
 
 
@@ -17,55 +16,57 @@ export default class QuadTree extends Quad {
 
     touch_things () {
         if (this.bucket_set) {
-            this.bucket_set.members.forEach(thing => thing.touch());
+            this.bucket_set.forEach(thing => thing.touch());
         }
     }
 
     add (thing) {
-        if (!Overlaps.quad_and_circle(this, thing)) return;
-        if (!this.things_set.add(thing)) return;
+        if (!Overlaps.quad_and_circle(this, thing)) return false;
+        if (!this.things_set.add(thing)) return false;
         if (this.bucket_set) {
-            if (this.bucket_set.length < this.capacity || !this.max_levels) {
+            if (this.bucket_set.size < this.capacity || !this.max_levels) {
                 this.bucket_set.add(thing);
                 thing.quads_set.add(this);
                 this.touch_things();
-                return;
+                return true;
             }
             this.split();
         }
         this.nodes.forEach(node => node.add(thing));
+        return true;
     }
 
     remove (thing) {
-        if (!this.things_set.remove(thing)) return;
+        if (!this.things_set.delete(thing)) return false;
         if (this.bucket_set) {
-            this.bucket_set.remove(thing);
-            thing.quads_set.remove(this);
+            this.bucket_set.delete(thing);
+            thing.quads_set.delete(this);
             this.touch_things();
         } else {
             let remove_from_nodes = thing => {
                 this.nodes.forEach(node => node.remove(thing));
             };
             remove_from_nodes(thing);
-            if (this.things_set.length <= this.capacity) {
-                this.things_set.members.forEach(remove_from_nodes);
+            if (this.things_set.size <= this.capacity) {
+                this.things_set.forEach(remove_from_nodes);
                 delete this.nodes;
                 this.bucket_set = new Set();
-                this.things_set.members.forEach(thing => {
+                this.things_set.forEach(thing => {
                     this.bucket_set.add(thing);
                     thing.quads_set.add(this);
                 });
                 this.touch_things();
             }
         }
+        return true;
     }
 
-    get_thing_at(x, y) {
+    get_thing_at (x, y) {
         let p = {x:x, y:y};
         let found_thing = null;
         if (!Overlaps.quad_and_point(this, p)) return null;
         if (this.bucket_set) {
-            this.bucket_set.members.forEach(thing => {
+            this.bucket_set.forEach(thing => {
                 if (Overlaps.circle_and_point(thing, p)) found_thing = thing;
             });
             return found_thing;
@@ -75,8 +76,8 @@ export default class QuadTree extends Quad {
         
     }
 
-    split() {
-        this.bucket_set.members.forEach(thing => thing.quads_set.remove(this));
+    split () {
+        this.bucket_set.forEach(thing => thing.quads_set.delete(this));
         let half_size = this.size / 2;
         this.nodes = [];
         for (let i = 0; i < 4; i++) {
@@ -90,8 +91,7 @@ export default class QuadTree extends Quad {
                 this.max_levels - 1
             );
             this.nodes[i] = qt;
-            //this.bucket_set.members.forEach(t => qt.add(t));
-            this.bucket_set.members.forEach(qt.add.bind(qt));
+            this.bucket_set.forEach(qt.add.bind(qt));
         }
         delete this.bucket_set;
     }

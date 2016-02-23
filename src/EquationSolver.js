@@ -2,14 +2,6 @@
 import Complex from "./Complex.js";
 let C = Complex.convert;
 
-function _trim_zeros (coefficients) {
-    let c = coefficients.slice();
-    while (c.length && !c[0]) c.shift();
-    //if we do this next line we need to add a zero to any solution list
-    //while (c.length && !c[c.length - 1]) c.pop();
-    return c;
-}
-
 let _sign = Math.sign || function (x) {
     return x && x > 0 ? 1 : -1;
 };
@@ -77,7 +69,6 @@ function _cubic(a, b, c, d, complex) {
         let n = _sqrt3 * Math.sin(k / 3);
         let p = -b / (3 * a);
         if (complex) {
-            //todo sort
             return [
                 C(-j * (m - n) + p),
                 C(-j * (m + n) + p),
@@ -88,7 +79,7 @@ function _cubic(a, b, c, d, complex) {
                 -j * (m - n) + p,
                 -j * (m + n) + p,
                 2 * j * Math.cos(k / 3) - b / (3 * a)
-            ].sort((a,b) => a - b);
+            ];
         }
     }
 }
@@ -119,29 +110,38 @@ function _quartic(a, b, c, d, e, complex) {
     if (complex) {
         return x;
     } else {
-        return x.filter(v => !v.i).map(v => v.r).sort((a,b) => a - b);
+        return x.filter(v => !v.i).map(v => v.r);
     }
 }
 
-export function solve(coefficients, complex = false) {
-    let co = _trim_zeros(coefficients);
-    if (!co.length) return [];
-    if (co.length < 2) {
-        if (coefficients.length < 2) return []; //5 = 0
-        if (complex) return [C(0)]; //5x = 0
-        return [0];
+function _solve(coefficients, complex = false) {
+    let co = coefficients.slice();
+    while (co.length && !co[0]) co.shift();
+    let solutions = [];
+    if (!co.length) return solutions;
+    if (!co[co.length - 1]) {
+        if (complex) solutions.push(C(0));
+        else solutions.push(0);
+        while (!co[co.length - 1]) co.pop();
     }
+    if (co.length < 2) return solutions;
     let a = co[0];
     let b = co[1];
-    if (co.length === 2) return _linear(a, b, complex);
+    if (co.length === 2) return _linear(a, b, complex).concat(solutions);
     let c = co[2];
-    if (co.length === 3) return _quadratic(a, b, c, complex);
+    if (co.length === 3) return _quadratic(a, b, c, complex).concat(solutions);
     let d = co[3];
-    if (co.length === 4) return _cubic(a, b, c, d, complex);
+    if (co.length === 4) return _cubic(a, b, c, d, complex).concat(solutions);
     let e = co[4];
-    if (co.length === 5) return _quartic(a, b, c, d, e, complex);
+    if (co.length === 5) return _quartic(a, b, c, d, e, complex).concat(solutions);
 
     return "unhandled polynomic order";
+}
+
+
+export function solve(coefficients, complex = false) {
+    if (complex) return _solve(coefficients, complex).sort((a,b) => a.r - b.r || a.i - b.i);
+    else return _solve(coefficients, complex).sort((a,b) => a - b);
 }
 
 export function linear (a, b, complex = false) {

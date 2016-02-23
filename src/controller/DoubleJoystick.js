@@ -59,10 +59,10 @@ export function calculate_arrow(p) {
 KeyboardControl.emitter.on(KeyboardControl.CHORD, (chord, ts) => {
     let x = 0;
     let y = 0;
-    let left = +!!(~chord.indexOf(37) || ~chord.indexOf(65));
-    let up = +!!(~chord.indexOf(38) || ~chord.indexOf(87));
-    let right = +!!(~chord.indexOf(39) || ~chord.indexOf(68));
-    let down = +!!(~chord.indexOf(40) || ~chord.indexOf(83));
+    let left = +(chord.has(37) || chord.has(65));
+    let up = +(chord.has(38) || chord.has(87));
+    let right = +(chord.has(39) || chord.has(68));
+    let down = +(chord.has(40) || chord.has(83));
     if (left ^ right) {
         if (left) x = -1;
         else x = 1;
