@@ -18,16 +18,16 @@ let h = 300;
 let t = Date.now();
 export let movingThings = new MovingThings(t, 0, 0, w, h);
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 200; i++) {
     let thing = RoundThing.random(t, w, h);
     let no_collision = true;
-    /*jshint loopfunc:true */
+    /*
     movingThings.things_set.forEach(thing2 => {
         if (Overlaps.circle_and_circle(thing, thing2)) {
             no_collision = false;
         }
     });
+    */
     if (no_collision) movingThings.add(thing);
 }
 
-movingThings.predict_collisions();

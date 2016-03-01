@@ -4,6 +4,8 @@ import Quad from "../Quad.js";
 
 const _SCALE = Symbol();
 
+let last_time = Date.now();
+
 export default class Board {
     constructor (context, vwidth = 400, vheight = 300) {
         this.context = context;
@@ -42,7 +44,8 @@ export default class Board {
     }
 
     redraw () {
-        let things = movingThings.get_things_at_t(Date.now());
+        last_time = Math.min(last_time + 100, Date.now());
+        let things = movingThings.get_things_at_t(last_time);
         this.context.clearRect(0,0,this.windowWidth,this.windowHeight);
         this.context.lineWidth = 1;
         let draw_quadtree = (quadtree) => {

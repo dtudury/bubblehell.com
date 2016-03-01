@@ -31,8 +31,8 @@ export default class Thing {
 
         let color_cycle = [
             "red",
-            "orange",
-            "yellow",
+            //"orange",
+            //"yellow",
             "lime",
             "aqua",
             "blue",
