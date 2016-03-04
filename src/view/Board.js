@@ -49,7 +49,7 @@ export default class Board {
         this.context.clearRect(0,0,this.windowWidth,this.windowHeight);
         this.context.lineWidth = 1;
         let draw_quadtree = (quadtree) => {
-            if (quadtree.nodes) {
+            if (quadtree.children) {
                 let middle = this.map(quadtree.x + quadtree.size / 2, quadtree.y + quadtree.size / 2);
                 let tl = this.map(quadtree.x, quadtree.y);
                 let br = this.map(quadtree.x + quadtree.size, quadtree.y + quadtree.size);
@@ -59,15 +59,16 @@ export default class Board {
                 this.context.moveTo(tl.x, middle.y);
                 this.context.lineTo(br.x, middle.y);
                 this.context.stroke();
-                quadtree.nodes.forEach(node => draw_quadtree(node));
+                quadtree.children.forEach(child => draw_quadtree(child));
             }
         };
 
-        this.context.strokeStyle = "rgb(240,240,255)";
+        //this.context.strokeStyle = "rgb(240,240,255)";
+        this.context.strokeStyle = "rgb(100,100,255)";
         draw_quadtree(movingThings);
 
         if (movingThings.thing) {
-            this.context.strokeStyle = "rgb(220,220,255)";
+            this.context.strokeStyle = "rgb(255,55,55)";
             this.context.lineWidth = 2;
             movingThings.thing.quads_set.forEach(quad => {
                 let tl = this.map(quad.x, quad.y);
@@ -87,6 +88,20 @@ export default class Board {
             let r = this.scale(thing.r);
             this.context.arc(p.x, p.y, r, 0, Math.PI*2, true);
             this.context.stroke();
+            let neighbors = new Set();
+            thing.quads_set.forEach(quad => {
+                quad.all_things.forEach(neighbor => {
+                    if(thing != neighbor) neighbors.push(neighbor);
+                });
+            });
+            neighbors.forEach(neighbor => {
+                this.context.strokeStyle = "grey";
+                let p1 = this.map(thing.x, thing.y);
+                let p2 = this.map(neighbor.x, neighbor.y);
+                this.context.moveTo(p1.x, p1.y);
+                this.context.lineTo(p2.x, p2.y);
+                this.context.stroke();
+            });
         });
 
         this.context.strokeStyle = "blue";
@@ -94,6 +109,17 @@ export default class Board {
         let origin = this.map(0, 0);
         this.context.strokeStyle = "black";
         this.context.strokeRect(origin.x, origin.y, this.scale(this.vwidth), this.scale(this.vheight));
+        let p = this.map(200, -50);
+        this.context.moveTo(p.x, p.y);
+        p = this.map(400, 150);
+        this.context.lineTo(p.x, p.y);
+        p = this.map(200, 350);
+        this.context.lineTo(p.x, p.y);
+        p = this.map(  0, 150);
+        this.context.lineTo(p.x, p.y);
+        p = this.map(200, -50);
+        this.context.lineTo(p.x, p.y);
+        this.context.stroke();
     }
 
     map (x, y) {

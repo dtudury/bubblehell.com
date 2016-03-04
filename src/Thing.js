@@ -11,7 +11,14 @@ export default class Thing {
         this.quads_set = new Set();
     }
 
-    clone_at_t(t) {
+    add (quad) {
+        return this.quads_set.add(quad);
+    }
+    delete (quad) {
+        return this.quads_set.delete(quad);
+    }
+
+    clone_at_t (t) {
         let dt = t - this.t;
         let dt2 = dt * dt;
         return new Thing(

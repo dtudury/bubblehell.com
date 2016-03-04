@@ -13,6 +13,6 @@ export default function (element, board) {
     });
     window.addEventListener("mousemove", e => {
         let p = board.reverse_map(e.x, e.y);
-        movingThings.thing = movingThings.get_thing_at(p.x, p.y);
+        movingThings.thing = movingThings.get_thing_at_t(p.x, p.y, Date.now());
     });
 }

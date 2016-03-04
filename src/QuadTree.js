@@ -9,51 +9,56 @@ export default class QuadTree extends Quad {
         this.size = size;
         this.capacity = capacity;
         this.max_levels = max_levels;
-        this.bucket_set = new Set();
-        this.nodes = null;
-        this.things_set = new Set();
+        this.my_things = new Set();
+        this.children = null;
+        this.all_things = new Set();
     }
 
     touch_things () {
-        if (this.bucket_set) {
-            this.bucket_set.forEach(thing => thing.touch());
+        if (this.my_things) {
+            this.my_things.forEach(thing => thing.touch());
         }
     }
 
     add (thing) {
         if (!Overlaps.quad_and_circle(this, thing)) return false;
-        if (!this.things_set.add(thing)) return false;
-        if (this.bucket_set) {
-            if (this.bucket_set.size < this.capacity || !this.max_levels) {
-                this.bucket_set.add(thing);
-                thing.quads_set.add(this);
+
+        if (this.all_things.has(thing)) return false;
+        else this.all_things.add(thing);
+
+        if (this.my_things) {
+            if (this.my_things.size < this.capacity || !this.max_levels) {
+                this.my_things.add(thing);
+                thing.add(this);
                 this.touch_things();
                 return true;
             }
             this.split();
         }
-        this.nodes.forEach(node => node.add(thing));
+        this.children.forEach(child => child.add(thing));
         return true;
     }
 
     remove (thing) {
-        if (!this.things_set.delete(thing)) return false;
-        if (this.bucket_set) {
-            this.bucket_set.delete(thing);
-            thing.quads_set.delete(this);
+        if (!this.all_things.delete(thing)) return false;
+
+        if (this.my_things) {
+            this.my_things.delete(thing);
+            thing.delete(this);
             this.touch_things();
         } else {
-            let remove_from_nodes = thing => {
-                this.nodes.forEach(node => node.remove(thing));
+            let remove_from_children = thing => {
+                this.children.forEach(child => child.remove(thing));
             };
-            remove_from_nodes(thing);
-            if (this.things_set.size <= this.capacity) {
-                this.things_set.forEach(remove_from_nodes);
-                delete this.nodes;
-                this.bucket_set = new Set();
-                this.things_set.forEach(thing => {
-                    this.bucket_set.add(thing);
-                    thing.quads_set.add(this);
+            remove_from_children(thing);
+            if (this.all_things.size <= this.capacity) {
+                this.all_things.forEach(remove_from_children);
+                delete this.children;
+                this.my_things = new Set();
+
+                this.all_things.forEach(thing => {
+                    this.my_things.add(thing);
+                    thing.add(this);
                 });
                 this.touch_things();
             }
@@ -65,21 +70,20 @@ export default class QuadTree extends Quad {
         let p = {x:x, y:y};
         let found_thing = null;
         if (!Overlaps.quad_and_point(this, p)) return null;
-        if (this.bucket_set) {
-            this.bucket_set.forEach(thing => {
+        if (this.my_things) {
+            this.my_things.forEach(thing => {
                 if (Overlaps.circle_and_point(thing, p)) found_thing = thing;
             });
             return found_thing;
         }
-        this.nodes.forEach(node => found_thing = found_thing || node.get_thing_at(x, y));
+        this.children.forEach(child => found_thing = found_thing || child.get_thing_at(x, y));
         return found_thing;
-        
     }
 
     split () {
-        this.bucket_set.forEach(thing => thing.quads_set.delete(this));
+        this.my_things.forEach(thing => thing.delete(this));
         let half_size = this.size / 2;
-        this.nodes = [];
+        this.children = [];
         for (let i = 0; i < 4; i++) {
             let x = i % 2;
             let y = (i / 2) >>> 0;
@@ -90,9 +94,9 @@ export default class QuadTree extends Quad {
                 this.capacity,
                 this.max_levels - 1
             );
-            this.nodes[i] = qt;
-            this.bucket_set.forEach(qt.add.bind(qt));
+            this.children[i] = qt;
+            this.my_things.forEach(thing => qt.add(thing));
         }
-        delete this.bucket_set;
+        delete this.my_things;
     }
 }

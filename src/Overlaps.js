@@ -16,9 +16,9 @@ export function quad_and_point(q, p) {
 
 export function quad_and_circle(q, c) {
     if (quad_and_quad(q, c)) return true;
-    if (c.x > q.left && c.x < q.right)
+    if (c.x >= q.left && c.x <= q.right)
         return c.y + c.r >= q.top && c.y - c.r <= q.bottom;
-    if (c.y > q.top && c.y <= q.bottom)
+    if (c.y >= q.top && c.y <= q.bottom)
         return c.x + c.r >= q.left && c.x - c.r <= q.right;
     let r2 = Math.pow(c.r, 2);
     return  Point.distance_squared(c, q.tl) <= r2 ||

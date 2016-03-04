@@ -40,4 +40,8 @@ export default class Quad {
     get br () {
         return new Point(this.right, this.bottom);
     }
+
+    get points () {
+        return [this.tl, this.tr, this.br, this.bl];
+    }
 }

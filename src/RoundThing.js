@@ -39,11 +39,11 @@ export default class RoundThing extends Thing {
         x = x === undefined ? (0.45 + 0.1 * Math.random()) * (w - 2 * r) + r : x;
         y = y === undefined ? Math.random() * (h - 2 * r) + r : y;
         let angle = Math.random() * 2 * Math.PI;
-        let speed = (Math.random() * 5 + 2) * 0.01;
+        let speed = (Math.random() * 5 + 2) * 0.001;
         let dx = Math.cos(angle) * speed;
         let dy = Math.sin(angle) * speed;
         let angle2 = Math.random() * 2 * Math.PI;
-        let acceleration = 0.00005;
+        let acceleration = 0.000005;
         let ddx = Math.cos(angle2) * acceleration;
         let ddy = Math.sin(angle2) * acceleration;
         return new RoundThing(t, r, x, y, dx, dy, ddx, ddy);
