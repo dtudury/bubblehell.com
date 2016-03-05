@@ -18,7 +18,7 @@ let h = 300;
 let t = Date.now();
 export let movingThings = new MovingThings(t, 0, 0, w, h);
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 30; i++) {
     let thing = RoundThing.random(t, w, h);
     let no_collision = true;
     /*

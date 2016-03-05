@@ -91,10 +91,11 @@ export default class Board {
             let neighbors = new Set();
             thing.quads_set.forEach(quad => {
                 quad.all_things.forEach(neighbor => {
-                    if(thing != neighbor) neighbors.push(neighbor);
+                    if (thing != neighbor) neighbors.add(neighbor);
                 });
             });
             neighbors.forEach(neighbor => {
+                this.context.beginPath();
                 this.context.strokeStyle = "grey";
                 let p1 = this.map(thing.x, thing.y);
                 let p2 = this.map(neighbor.x, neighbor.y);
