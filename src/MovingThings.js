@@ -1,21 +1,10 @@
 
 import QuadTree from "./QuadTree";
-import {solve} from "./EquationSolver";
+import {points_to_lines, predict_collisions, predict_quad_collisions} from "./CollisionSolver";
 import Point from "./Point";
-import Line from "./Line";
 import * as Overlaps from "./Overlaps.js";
 
 let _collisions_by_things = new Map();
-
-function points_to_lines(points) {
-    let lines = [];
-    points.forEach((p1, i1) => {
-        let i2 = (i1 + 1) % points.length;
-        let p2 = points[i2];
-        lines.push(new Line(p1, p2));
-    });
-    return lines;
-}
 
 let box = [
     {x:  -0.1, y:  -0.1},
@@ -32,69 +21,9 @@ let diamond = [
 ];
 diamond = points_to_lines(diamond);
 
-function predict_collisions(thing, shape) {
-    var collisions = [];
-    shape.forEach(line => {
-        let n = Point.normalize(Line.get_normals(line)[0]);
-        let n_dot_p = Point.dot(n, new Point(thing.x - line.p1.x, thing.y - line.p1.y));
-        if (n_dot_p < 0) return;
-        
-        let coefficients = [
-            Point.dot(n, new Point(thing.ddx, thing.ddy)) / 2,
-            Point.dot(n, new Point(thing.dx, thing.dy)),
-            n_dot_p - thing.r
-        ];
-        let dts = solve(coefficients);
-        dts.forEach(dt => {
-            if (dt <= 0) return;
-            collisions.push({
-                thing: thing,
-                normal: n,
-                t: thing.t + dt
-            });
-        });
-    });
-    return collisions;
-}
-
-function predict_collisions2(thing, shape) {
-    var collisions = [];
-    shape.forEach(line => {
-        let n = Point.normalize(Line.get_normals(line)[0]);
-        let n_dot_p = Point.dot(n, new Point(thing.x - line.p1.x, thing.y - line.p1.y));
-        //if (n_dot_p < 0) return;
-        
-        let ddz = Point.dot(n, new Point(thing.ddx, thing.ddy)) / 2;
-        let dz = Point.dot(n, new Point(thing.dx, thing.dy));
-        let dts = [].concat(
-            solve([ddz, dz, n_dot_p - thing.r]),
-            solve([ddz, dz, n_dot_p + thing.r]));
-        dts.forEach(dt => {
-            if (dt <= 0) return;
-            collisions.push({
-                thing: thing,
-                normal: n,
-                t: thing.t + dt
-            });
-        });
-    });
-    return collisions;
-}
-
-function predict_quad_collisions(thing) {
-    var collisions = [];
-    thing.quads_set.forEach(quad => {
-        let shape = points_to_lines(quad.points);
-        let naive_collisions = predict_collisions2(thing, shape);
-        naive_collisions.forEach(c => delete c.normal);
-        collisions = collisions.concat(naive_collisions);
-    });
-    return collisions;
-}
-
 function _predict_all_collisions(thing) {
-    let room_collisions = predict_collisions(thing, box);
-    let diamond_collisions = predict_collisions(thing, diamond);
+    let room_collisions = predict_collisions(thing, box, false, false);
+    let diamond_collisions = predict_collisions(thing, diamond, false, false);
     let quad_collisions = predict_quad_collisions(thing);
     return [].concat(room_collisions, diamond_collisions, quad_collisions);
 }
