@@ -36,7 +36,7 @@ function bundle (main, src, dest, output, watch) {
 gulp.task("connect", function () {
     connect.server({
         root: "build",
-        livereload: true
+        livereload: {port: 8081}
     });
 });
  
